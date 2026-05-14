@@ -1,0 +1,32 @@
+name: Build Release APK
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      # ВОТ ОН, СЕКРЕТНЫЙ ИНГРЕДИЕНТ! 
+      # Мы просим Flutter сгенерировать правильный Android проект поверх наших файлов.
+      - name: Generate Android Embedding v2
+        run: flutter create --platforms=android --org com.obanstudio --project-name oban_anime .
+        
+      - name: Install Dependencies
+        run: flutter pub get
+        
+      - name: Build APK Release
+        run: flutter build apk --release
+      
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oban-anime-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
